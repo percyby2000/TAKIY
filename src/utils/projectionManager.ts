@@ -34,6 +34,9 @@ export const projectionManager = {
         projectorWindow.postMessage({
           type: 'UPDATE_SLIDE',
           payload: slide
+        }, '*');
+      }
+      
       // Update local UI
       window.dispatchEvent(new CustomEvent('takiy_slide_changed', { 
         detail: { 

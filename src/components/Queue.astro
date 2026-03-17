@@ -81,9 +81,9 @@
             ...s, 
             title: song.title, // Inject title for Bible verses or song titles
             background: s.background || song.background
-            projectionManager.updateSlide(0);
-        }
-        
+        }));
+        projectionManager.setQueue(currentQueueData);
+        projectionManager.updateSlide(0);
         renderQueue();
     });
 
