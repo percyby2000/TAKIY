@@ -45,21 +45,22 @@
             const card = document.createElement('div');
             const isActive = projectionManager.getCurrentIndex() === index;
             
+            let previewText = slide.text;
+            if (slide.type === 'verse' && slide.title) {
+                previewText = `"${slide.text}"<br><span class="text-brand-cyan mt-1 block text-[8px] uppercase tracking-widest">${slide.title}</span>`;
+            }
+
             card.className = `flex-none w-48 h-full rounded-lg relative overflow-hidden group cursor-pointer transition-all duration-300 border ${
-                isActive 
-                ? 'border-brand-cyan glow-cyan ring-4 ring-brand-cyan/10 scale-[1.02]' 
+                isActive
+                ? 'border-brand-cyan glow-cyan ring-4 ring-brand-cyan/10 scale-[1.02]'
                 : 'border-white/10 hover:border-brand-cyan/50'
             }`;
-            
+
             card.innerHTML = `
                 <div class="absolute inset-0 bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity" style="background-image: url(${slide.background})"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
                 <div class="absolute inset-0 flex items-center justify-center p-4 text-center">
-                    <span class="text-[10px] font-bold leading-tight line-clamp-3">${slide.text}</span>
-                </div>
-                <div class="absolute bottom-2 left-2 flex items-baseline gap-1">
-                    <span class="text-[10px] font-bold ${isActive ? 'text-brand-cyan' : 'text-white/40'}">${(index + 1).toString().padStart(2, '0')}</span>
-                    <span class="text-[8px] font-medium text-white/40 uppercase">Slide</span>
+                    <span class="text-[10px] font-bold leading-tight line-clamp-3">${previewText}</span>
                 </div>
                 ${isActive ? '<div class="absolute top-2 right-2"><div class="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse"></div></div>' : ''}
             `;
@@ -78,12 +79,8 @@
         const song = e.detail;
         currentQueueData = song.slides.map((s: any) => ({ 
             ...s, 
-            background: song.background 
-        }));
-        projectionManager.setQueue(currentQueueData);
-        
-        // Auto-project first slide when selecting from library
-        if (currentQueueData.length > 0) {
+            title: song.title, // Inject title for Bible verses or song titles
+            background: s.background || song.background
             projectionManager.updateSlide(0);
         }
         

@@ -88,7 +88,20 @@
     // Update Monitor UI when slide changes
     window.addEventListener('takiy_slide_changed', (e: any) => {
         const { slide } = e.detail;
-        if (monitorText) monitorText.innerHTML = slide.text;
+        if (monitorText) {
+            if (slide.type === 'verse') {
+                monitorText.innerHTML = `
+                    <div class="flex flex-col items-center justify-center p-2 gap-2 h-full">
+                        <div class="text-[10px] md:text-sm font-serif leading-snug line-clamp-4">"${slide.text}"</div>
+                        <div class="px-3 py-1 rounded-full bg-black/60 border border-brand-cyan/50 text-brand-cyan text-[8px] font-bold uppercase tracking-widest leading-none mt-1 shadow-md">
+                            ${slide.title || 'Biblia'}
+                        </div>
+                    </div>
+                `;
+            } else {
+                monitorText.innerHTML = slide.text;
+            }
+        }
         if (monitorBg) monitorBg.style.backgroundImage = `url(${slide.background})`;
         if (liveStatus) liveStatus.innerText = 'LIVE';
     });

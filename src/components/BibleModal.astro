@@ -20,10 +20,9 @@ import { bibleBooks, categories } from '../utils/bibleData';
         <div class="h-6 w-px bg-white/10"></div>
         
         <select id="bible-version-select" class="bg-white/5 border border-white/10 text-white text-xs rounded-lg py-1 px-3 focus:outline-none focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan">
-          <option value="RVR1960">Reina Valera 1960 (RVR)</option>
-          <option value="NVI">Nueva Versión Internacional (NVI)</option>
-          <option value="NTV">Nueva Traducción Viviente (NTV)</option>
-          <option value="TLA">Traducción Lenguaje Actual (TLA)</option>
+          <option value="Reina-Valera 1960">Reina Valera 1960</option>
+          <option value="Nueva Traducción Viviente">Nueva Traducción Viviente (NTV)</option>
+          <option value="QUECHUA V3">Quechua V3</option>
         </select>
       </div>
       
@@ -38,7 +37,7 @@ import { bibleBooks, categories } from '../utils/bibleData';
       <div class="w-1/3 bg-black/40 border-r border-white/5 flex flex-col">
          <div class="p-4 border-b border-white/5 flex gap-2">
             <input type="text" id="bible-search" placeholder="Buscar texto bíblico..." class="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-brand-cyan transition-all-300 text-white placeholder-white/30" />
-            <button class="bg-brand-cyan text-black font-bold px-4 rounded-lg text-xs uppercase hover:bg-brand-cyan/80 transition-all">Buscar</button>
+            <button id="btn-bible-search" class="bg-brand-cyan text-black font-bold px-4 rounded-lg text-xs uppercase hover:bg-brand-cyan/80 transition-all shadow-[0_0_10px_rgba(34,211,238,0.2)]">Buscar</button>
          </div>
          
          <div id="bible-reader" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
@@ -102,6 +101,29 @@ import { bibleBooks, categories } from '../utils/bibleData';
   let currentChapter: number | null = null;
   let currentVerse: number | null = null;
   
+  const xmlCache: Record<string, Document> = {};
+  
+  async function loadBibleXML(version: string) {
+      if (xmlCache[version]) return xmlCache[version];
+      // Codificamos el nombre para que espacios o tildes no rompan la URL (archivos en public/recursos)
+      const res = await fetch(`/recursos/${encodeURIComponent(version)}.xml`);
+      if (!res.ok) throw new Error("No se pudo cargar la Biblia (" + version + ")");
+      const text = await res.text();
+      const doc = new DOMParser().parseFromString(text, "text/xml");
+      xmlCache[version] = doc;
+      return doc;
+  }
+  
+  // Reload if version changes and we are in a chapter
+  const versionSelect = document.getElementById('bible-version-select') as HTMLSelectElement;
+  versionSelect?.addEventListener('change', () => {
+      if (currentBook && currentBook.id && currentChapter) {
+          selectChapter(currentChapter);
+      } else if (searchInput?.value) {
+          performSearch();
+      }
+  });
+
   // Initialize Books Grid
   function initBooksGrid() {
       if (!gridBooks) return;
@@ -145,52 +167,76 @@ import { bibleBooks, categories } from '../utils/bibleData';
       if (bibleReader) bibleReader.innerHTML = '<div class="h-full flex items-center justify-center text-white/20 text-sm flex-col gap-4"><p>Selecciona un capítulo de ' + book.name + '.</p></div>';
   }
   
-  function selectChapter(chap: number) {
+  async function selectChapter(chap: number) {
       currentChapter = chap;
       currentVerse = null;
       showLevel('verse');
       updateBreadcrumbs();
       
-      if (!gridVerses) return;
+      if (!gridVerses || !bibleReader) return;
       gridVerses.innerHTML = '';
+      bibleReader.innerHTML = '<div class="h-full flex items-center justify-center text-white/50 text-sm flex-col gap-4"><svg class="w-8 h-8 animate-spin text-brand-cyan" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg><p>Cargando capítulo...</p></div>';
       
-      const cat = (categories as any)[currentBook.cat];
-      const colorClass = cat ? cat.bgColor.split('-')[1] : 'gray';
-      
-      // Mock random verses count between 20 and 40
-      const versesCount = Math.floor(Math.random() * 20) + 20; 
-      
-      for(let i = 1; i <= versesCount; i++) {
-          const btn = document.createElement('button');
-          btn.className = `aspect-square rounded bg-white/5 border border-white/10 hover:bg-brand-cyan/20 hover:border-brand-cyan/50 text-white font-bold text-lg transition-all hover:scale-105`;
-          btn.innerText = i.toString();
-          btn.addEventListener('click', () => selectVerse(i));
-          gridVerses.appendChild(btn);
-      }
-      
-      // Mock Reader Content
-      if (bibleReader) {
+      try {
+          const version = versionSelect ? versionSelect.value : "Reina-Valera 1960";
+          const xmlDoc = await loadBibleXML(version);
+          
+          const bookIndex = bibleBooks.findIndex(b => b.id === currentBook.id) + 1;
+          
+          // Buscar el libro y el capítulo en el XML
+          // Usamos nth-of-type o bnumber ya que diferentes versiones XML podrían usar distintas métricas
+          const chapterNode = xmlDoc.querySelector(`BIBLEBOOK[bnumber="${bookIndex}"] CHAPTER[cnumber="${chap}"]`) || 
+                              xmlDoc.querySelector(`BIBLEBOOK:nth-of-type(${bookIndex}) CHAPTER:nth-of-type(${chap})`);
+                              
+          if (!chapterNode) throw new Error("Capítulo no encontrado");
+          
+          const versesNodes = Array.from(chapterNode.querySelectorAll('VERS'));
+          if (versesNodes.length === 0) throw new Error("No hay versículos");
+          
+          gridVerses.innerHTML = '';
+          for(let i = 1; i <= versesNodes.length; i++) {
+              const btn = document.createElement('button');
+              btn.className = `aspect-square rounded bg-white/5 border border-white/10 hover:bg-brand-cyan/20 hover:border-brand-cyan/50 text-white font-bold text-lg transition-all hover:scale-105`;
+              btn.innerText = i.toString();
+              btn.addEventListener('click', () => selectVerse(i));
+              gridVerses.appendChild(btn);
+          }
+          
+          // Render Reader
           bibleReader.innerHTML = `
-             <div class="mb-4">
+             <div class="mb-4 sticky top-0 bg-[#0c0c0e]/90 backdrop-blur-md pb-2 pt-1 z-10 border-b border-white/5">
                  <h3 class="text-xl font-bold font-serif text-brand-cyan">${currentBook.name} ${currentChapter}</h3>
-                 <p class="text-xs text-white/40">Versión RVR1960</p>
+                 <p class="text-xs text-white/40 uppercase tracking-widest mt-1">Versión: ${version}</p>
              </div>
           `;
           
-          for(let i = 1; i <= versesCount; i++) {
+          const contentWrapper = document.createElement('div');
+          contentWrapper.className = 'flex flex-col gap-1 pb-10';
+          
+          versesNodes.forEach((vNode) => {
+              const vNumber = vNode.getAttribute('vnumber') || vNode.getAttribute('n') || "0";
+              const text = vNode.textContent?.trim() || "";
               const row = document.createElement('div');
-              row.className = `p-3 rounded-lg border border-transparent hover:border-brand-cyan/30 hover:bg-brand-cyan/5 cursor-pointer transition-colors group mb-1 flex gap-3`;
-              row.id = `verse-row-${i}`;
+              row.className = `p-3 rounded-lg border border-transparent hover:border-brand-cyan/30 hover:bg-brand-cyan/5 cursor-pointer transition-colors group flex gap-3`;
+              row.id = `verse-row-${vNumber}`;
               row.innerHTML = `
-                 <span class="text-brand-cyan/50 font-bold text-xs pt-0.5 group-hover:text-brand-cyan">${i}</span>
-                 <p class="text-white/80 font-serif leading-relaxed text-sm group-hover:text-white">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                 <span class="text-brand-cyan/50 font-bold text-xs pt-0.5 group-hover:text-brand-cyan min-w-[1.5rem]">${vNumber}</span>
+                 <p class="text-white/80 font-serif leading-relaxed text-sm group-hover:text-white">${text}</p>
               `;
               row.addEventListener('click', () => {
                   document.querySelectorAll('[id^="verse-row-"]').forEach(r => r.classList.remove('bg-brand-cyan/20', 'border-brand-cyan/50'));
                   row.classList.add('bg-brand-cyan/20', 'border-brand-cyan/50');
+                  currentVerse = parseInt(vNumber);
+                  updateBreadcrumbs();
               });
-              bibleReader.appendChild(row);
-          }
+              contentWrapper.appendChild(row);
+          });
+          
+          bibleReader.appendChild(contentWrapper);
+          
+      } catch(err) {
+          console.error(err);
+          bibleReader.innerHTML = '<div class="text-red-500 p-6 text-center text-sm border border-red-500/20 bg-red-500/10 rounded-xl mt-4"><svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Error al cargar la Biblia.<br><br><span class="text-xs opacity-70">Asegúrate de que el archivo XML esté en la carpeta public/recursos/</span></div>';
       }
   }
   
@@ -292,6 +338,104 @@ import { bibleBooks, categories } from '../utils/bibleData';
 
   // Init early to render books grid initially
   initBooksGrid();
+
+  // Search Logic
+  const searchInput = document.getElementById('bible-search') as HTMLInputElement;
+  const searchBtn = document.getElementById('btn-bible-search');
+  
+  async function performSearch() {
+      const term = searchInput?.value.trim().toLowerCase();
+      if (!term || !bibleReader) return;
+      
+      currentBook = null;
+      currentChapter = null;
+      currentVerse = null;
+      updateBreadcrumbs();
+      
+      bibleReader.innerHTML = '<div class="h-full flex items-center justify-center text-white/50 text-sm flex-col gap-4"><svg class="w-8 h-8 animate-spin text-brand-cyan" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg><p>Buscando...</p></div>';
+      
+      try {
+          const versionSelect = document.getElementById('bible-version-select') as HTMLSelectElement;
+          const version = versionSelect ? versionSelect.value : "Reina-Valera 1960";
+          const xmlDoc = await loadBibleXML(version);
+          
+          const versesNodes = Array.from(xmlDoc.querySelectorAll('VERS'));
+          const results = [];
+          
+          for (let vNode of versesNodes) {
+              const text = vNode.textContent || "";
+              if (text.toLowerCase().includes(term)) {
+                  // Find parent chapter and book
+                  const chapNode = vNode.parentElement;
+                  const bookNode = chapNode?.parentElement;
+                  
+                  const cNumber = chapNode?.getAttribute('cnumber') || chapNode?.getAttribute('n') || "0";
+                  const bNumber = bookNode?.getAttribute('bnumber') || bookNode?.getAttribute('n') || "0";
+                  const vNumber = vNode.getAttribute('vnumber') || vNode.getAttribute('n') || "0";
+                  const bName = bookNode?.getAttribute('bname') || bibleBooks[parseInt(bNumber) - 1]?.name || "Libro";
+                  
+                  results.push({ bNumber, bName, cNumber, vNumber, text });
+                  if (results.length > 100) break; // Limit to 100 results for performance
+              }
+          }
+          
+          if (results.length === 0) {
+              bibleReader.innerHTML = '<div class="text-white/50 p-6 text-center text-sm">No se encontraron resultados para "' + term + '"</div>';
+              return;
+          }
+          
+          bibleReader.innerHTML = `
+             <div class="mb-4 sticky top-0 bg-[#0c0c0e]/90 backdrop-blur-md pb-2 pt-1 z-10 border-b border-white/5">
+                 <h3 class="text-xl font-bold font-serif text-brand-cyan">Resultados: "${term}"</h3>
+                 <p class="text-xs text-white/40 mt-1">${results.length}${results.length > 100 ? '+' : ''} coincidencias en ${version}</p>
+             </div>
+          `;
+          
+          const contentWrapper = document.createElement('div');
+          contentWrapper.className = 'flex flex-col gap-1 pb-10';
+          
+          results.forEach((res) => {
+              const row = document.createElement('div');
+              row.className = `p-3 rounded-lg border border-transparent hover:border-brand-cyan/30 hover:bg-brand-cyan/5 cursor-pointer transition-colors group flex gap-3`;
+              row.id = `verse-row-${res.bNumber}-${res.cNumber}-${res.vNumber}`;
+              
+              // highlight search term
+              const regex = new RegExp(`(${term})`, 'gi');
+              const highlightedText = res.text.replace(regex, '<span class="text-brand-cyan bg-brand-cyan/10 px-1 rounded">$1</span>');
+              
+              row.innerHTML = `
+                 <div class="flex flex-col min-w-[4rem] text-right">
+                    <span class="text-white/40 text-[10px] uppercase font-bold tracking-wider leading-none">${res.bName}</span>
+                    <span class="text-brand-cyan/80 font-bold text-xs group-hover:text-brand-cyan">${res.cNumber}:${res.vNumber}</span>
+                 </div>
+                 <p class="text-white/80 font-serif leading-relaxed text-sm group-hover:text-white">${highlightedText}</p>
+              `;
+              
+              row.addEventListener('click', () => {
+                  document.querySelectorAll('[id^="verse-row-"]').forEach(r => r.classList.remove('bg-brand-cyan/20', 'border-brand-cyan/50'));
+                  row.classList.add('bg-brand-cyan/20', 'border-brand-cyan/50');
+                  
+                  // Mock state for projection
+                  currentBook = { name: res.bName };
+                  currentChapter = parseInt(res.cNumber);
+                  currentVerse = parseInt(res.vNumber);
+              });
+              
+              contentWrapper.appendChild(row);
+          });
+          
+          bibleReader.appendChild(contentWrapper);
+          
+      } catch (e) {
+          console.error(e);
+          bibleReader.innerHTML = '<div class="text-red-500 p-4">Ocurrió un error al buscar.</div>';
+      }
+  }
+  
+  searchBtn?.addEventListener('click', performSearch);
+  searchInput?.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') performSearch();
+  });
 
   // Project button logic
   const projectBtn = document.getElementById('btn-project-bible');
