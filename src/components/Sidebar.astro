@@ -100,7 +100,31 @@
             btn.classList.remove('text-white/40');
             
             if (btn.getAttribute('data-tab') !== 'songs') {
-                if (libraryList) libraryList.innerHTML = '<div class="text-center py-20 animate-pulse text-white/10 text-[10px] uppercase font-bold tracking-widest">Cargando...</div>';
+                if (btn.getAttribute('data-tab') === 'bibles') {
+                    if (libraryList) {
+                        libraryList.innerHTML = `
+                            <div class="flex flex-col items-center justify-center py-10 px-4 text-center h-full">
+                                <div class="w-16 h-16 rounded-full bg-brand-cyan/10 flex items-center justify-center text-brand-cyan mb-4">
+                                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                </div>
+                                <h3 class="text-white font-bold mb-2">Explorador de Biblias</h3>
+                                <p class="text-xs text-white/50 mb-6">Busca y proyecta versículos con el navegador avanzado gratuito.</p>
+                                <button id="btn-open-bible" class="w-full py-3 bg-brand-cyan text-black font-bold uppercase tracking-widest text-[10px] rounded-lg hover:bg-brand-cyan/80 transition-all shadow-[0_0_15px_rgba(34,211,238,0.2)] hover:shadow-[0_0_25px_rgba(34,211,238,0.4)]">
+                                    Abrir Navegador
+                                </button>
+                            </div>
+                        `;
+                        // Attach event
+                        document.getElementById('btn-open-bible')?.addEventListener('click', () => {
+                            window.dispatchEvent(new CustomEvent('takiy_open_bible'));
+                        });
+                        // Autoplay if user prefers direct hit? The user says "al preconar ala biblia me debe mostrar una ventana"
+                        // Let's just dispatch it automatically as well!
+                        window.dispatchEvent(new CustomEvent('takiy_open_bible'));
+                    }
+                } else {
+                    if (libraryList) libraryList.innerHTML = '<div class="text-center py-20 animate-pulse text-white/10 text-[10px] uppercase font-bold tracking-widest">Cargando...</div>';
+                }
             } else {
                 renderSongs(searchInput?.value);
             }

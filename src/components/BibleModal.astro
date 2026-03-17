@@ -1,0 +1,353 @@
+---
+import { bibleBooks, categories } from '../utils/bibleData';
+---
+
+<div id="bible-modal" class="fixed inset-0 z-[100] hidden">
+  <!-- Backdrop -->
+  <div class="absolute inset-0 bg-black/90 backdrop-blur-xl transition-opacity"></div>
+  
+  <!-- Content Window -->
+  <div class="absolute inset-4 md:inset-8 lg:inset-12 bg-[#0c0c0e] rounded-2xl border border-white/10 shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+    
+    <!-- Header -->
+    <div class="h-14 border-b border-white/10 flex items-center justify-between px-6 bg-black/40">
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 text-brand-cyan">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+          <h2 class="text-sm font-bold tracking-widest uppercase">Navegador Bíblico</h2>
+        </div>
+        
+        <div class="h-6 w-px bg-white/10"></div>
+        
+        <select id="bible-version-select" class="bg-white/5 border border-white/10 text-white text-xs rounded-lg py-1 px-3 focus:outline-none focus:border-brand-cyan focus:ring-1 focus:ring-brand-cyan">
+          <option value="RVR1960">Reina Valera 1960 (RVR)</option>
+          <option value="NVI">Nueva Versión Internacional (NVI)</option>
+          <option value="NTV">Nueva Traducción Viviente (NTV)</option>
+          <option value="TLA">Traducción Lenguaje Actual (TLA)</option>
+        </select>
+      </div>
+      
+      <button id="close-bible-modal" class="text-white/40 hover:text-white transition-colors bg-white/5 p-2 rounded-lg hover:bg-white/10">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+    </div>
+
+    <!-- Main Body -->
+    <div class="flex-1 flex overflow-hidden">
+      <!-- PANEL IZQUIERDO: Visualizador de Versículos -->
+      <div class="w-1/3 bg-black/40 border-r border-white/5 flex flex-col">
+         <div class="p-4 border-b border-white/5 flex gap-2">
+            <input type="text" id="bible-search" placeholder="Buscar texto bíblico..." class="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-sm focus:outline-none focus:border-brand-cyan transition-all-300 text-white placeholder-white/30" />
+            <button class="bg-brand-cyan text-black font-bold px-4 rounded-lg text-xs uppercase hover:bg-brand-cyan/80 transition-all">Buscar</button>
+         </div>
+         
+         <div id="bible-reader" class="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
+            <!-- Verses will be populated here -->
+            <div class="h-full flex items-center justify-center text-white/20 text-sm flex-col gap-4">
+               <svg class="w-16 h-16 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+               <p>Selecciona un libro, capítulo y versículo para comenzar.</p>
+            </div>
+         </div>
+         
+         <div class="p-4 border-t border-white/5">
+            <button id="btn-project-bible" class="w-full py-3 bg-white/5 hover:bg-brand-cyan hover:text-black border border-white/10 hover:border-brand-cyan rounded-lg text-xs uppercase tracking-widest font-bold transition-all-300 disabled:opacity-50 disabled:cursor-not-allowed">
+              Proyectar Selección
+            </button>
+         </div>
+      </div>
+
+      <!-- PANEL DERECHO: Navegador de Grillas -->
+      <div class="w-2/3 flex flex-col bg-[#0f0f13]">
+        <!-- Breadcrumbs Navigation -->
+        <div class="h-12 border-b border-white/5 flex items-center px-4 gap-2 bg-black/60 shadow-sm" id="bible-breadcrumbs">
+           <button class="nav-crumb hover:text-brand-cyan transition-colors text-xs font-bold uppercase tracking-wide text-brand-cyan" data-level="book">Libros</button>
+           <svg class="w-4 h-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+           <button class="nav-crumb hover:text-brand-cyan transition-colors text-xs font-bold uppercase tracking-wide text-white/40" data-level="chapter" disabled>Capítulo -</button>
+           <svg class="w-4 h-4 text-white/20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+           <button class="nav-crumb hover:text-brand-cyan transition-colors text-xs font-bold uppercase tracking-wide text-white/40" data-level="verse" disabled>Versículo -</button>
+        </div>
+
+        <!-- Grids Container -->
+        <div class="flex-1 overflow-y-auto p-6 relative">
+          <!-- Books Grid -->
+          <div id="grid-books" class="grid grid-cols-5 md:grid-cols-8 lg:grid-cols-10 gap-2">
+            <!-- Render books mapped to their category color -->
+          </div>
+
+          <!-- Chapters Grid (Hidden by default) -->
+          <div id="grid-chapters" class="hidden grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-2">
+          </div>
+
+          <!-- Verses Grid (Hidden by default) -->
+          <div id="grid-verses" class="hidden grid-cols-6 md:grid-cols-10 lg:grid-cols-12 gap-2">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { bibleBooks, categories } from '../utils/bibleData';
+  
+  const modal = document.getElementById('bible-modal');
+  const closeBtn = document.getElementById('close-bible-modal');
+  const gridBooks = document.getElementById('grid-books');
+  const gridChapters = document.getElementById('grid-chapters');
+  const gridVerses = document.getElementById('grid-verses');
+  const breadcrumbs = document.querySelectorAll('.nav-crumb');
+  const bibleReader = document.getElementById('bible-reader');
+  
+  let currentBook: any = null;
+  let currentChapter: number | null = null;
+  let currentVerse: number | null = null;
+  
+  // Initialize Books Grid
+  function initBooksGrid() {
+      if (!gridBooks) return;
+      gridBooks.innerHTML = '';
+      
+      bibleBooks.forEach((book, idx) => {
+          const btn = document.createElement('button');
+          const cat = (categories as any)[book.cat];
+          // Use a default gradient or fallback color if category missing
+          const bgColor = cat ? cat.bgColor : 'bg-gray-600/80';
+          
+          btn.className = `aspect-square rounded-md flex flex-col items-center justify-center border border-white/10 hover:scale-105 hover:shadow-lg transition-transform ${bgColor} text-white group relative pb-1`;
+          btn.innerHTML = `
+             <span class="text-lg font-black tracking-tighter mix-blend-overlay group-hover:mix-blend-normal transition-all">${book.short}</span>
+             <span class="text-[9px] font-medium absolute bottom-1 w-full text-center truncate px-1 opacity-60 group-hover:opacity-100">${book.name}</span>
+          `;
+          
+          btn.addEventListener('click', () => selectBook(book));
+          gridBooks.appendChild(btn);
+      });
+  }
+  
+  function selectBook(book: any) {
+      currentBook = book;
+      currentChapter = null;
+      currentVerse = null;
+      showLevel('chapter');
+      updateBreadcrumbs();
+      
+      if (!gridChapters) return;
+      gridChapters.innerHTML = '';
+      
+      for(let i = 1; i <= book.chapters; i++) {
+          const btn = document.createElement('button');
+          btn.className = `aspect-square rounded bg-white/5 border border-white/10 hover:bg-brand-cyan/20 hover:border-brand-cyan/50 text-white font-bold text-lg transition-all hover:scale-105`;
+          btn.innerText = i.toString();
+          btn.addEventListener('click', () => selectChapter(i));
+          gridChapters.appendChild(btn);
+      }
+      
+      if (bibleReader) bibleReader.innerHTML = '<div class="h-full flex items-center justify-center text-white/20 text-sm flex-col gap-4"><p>Selecciona un capítulo de ' + book.name + '.</p></div>';
+  }
+  
+  function selectChapter(chap: number) {
+      currentChapter = chap;
+      currentVerse = null;
+      showLevel('verse');
+      updateBreadcrumbs();
+      
+      if (!gridVerses) return;
+      gridVerses.innerHTML = '';
+      
+      const cat = (categories as any)[currentBook.cat];
+      const colorClass = cat ? cat.bgColor.split('-')[1] : 'gray';
+      
+      // Mock random verses count between 20 and 40
+      const versesCount = Math.floor(Math.random() * 20) + 20; 
+      
+      for(let i = 1; i <= versesCount; i++) {
+          const btn = document.createElement('button');
+          btn.className = `aspect-square rounded bg-white/5 border border-white/10 hover:bg-brand-cyan/20 hover:border-brand-cyan/50 text-white font-bold text-lg transition-all hover:scale-105`;
+          btn.innerText = i.toString();
+          btn.addEventListener('click', () => selectVerse(i));
+          gridVerses.appendChild(btn);
+      }
+      
+      // Mock Reader Content
+      if (bibleReader) {
+          bibleReader.innerHTML = `
+             <div class="mb-4">
+                 <h3 class="text-xl font-bold font-serif text-brand-cyan">${currentBook.name} ${currentChapter}</h3>
+                 <p class="text-xs text-white/40">Versión RVR1960</p>
+             </div>
+          `;
+          
+          for(let i = 1; i <= versesCount; i++) {
+              const row = document.createElement('div');
+              row.className = `p-3 rounded-lg border border-transparent hover:border-brand-cyan/30 hover:bg-brand-cyan/5 cursor-pointer transition-colors group mb-1 flex gap-3`;
+              row.id = `verse-row-${i}`;
+              row.innerHTML = `
+                 <span class="text-brand-cyan/50 font-bold text-xs pt-0.5 group-hover:text-brand-cyan">${i}</span>
+                 <p class="text-white/80 font-serif leading-relaxed text-sm group-hover:text-white">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+              `;
+              row.addEventListener('click', () => {
+                  document.querySelectorAll('[id^="verse-row-"]').forEach(r => r.classList.remove('bg-brand-cyan/20', 'border-brand-cyan/50'));
+                  row.classList.add('bg-brand-cyan/20', 'border-brand-cyan/50');
+              });
+              bibleReader.appendChild(row);
+          }
+      }
+  }
+  
+  function selectVerse(verse: number) {
+      currentVerse = verse;
+      updateBreadcrumbs();
+      
+      const row = document.getElementById(`verse-row-${verse}`);
+      if (row) {
+          row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          row.click(); // highlight it
+      }
+  }
+  
+  function showLevel(level: 'book' | 'chapter' | 'verse') {
+      gridBooks?.classList.add('hidden');
+      gridChapters?.classList.add('hidden');
+      gridVerses?.classList.add('hidden');
+      
+      gridBooks?.classList.remove('grid');
+      gridChapters?.classList.remove('grid');
+      gridVerses?.classList.remove('grid');
+      
+      if (level === 'book') {
+          gridBooks?.classList.add('grid');
+          gridBooks?.classList.remove('hidden');
+      } else if (level === 'chapter') {
+          gridChapters?.classList.add('grid');
+          gridChapters?.classList.remove('hidden');
+      } else {
+          gridVerses?.classList.add('grid');
+          gridVerses?.classList.remove('hidden');
+      }
+  }
+  
+  function updateBreadcrumbs() {
+      breadcrumbs.forEach((crumb: any) => {
+          const l = crumb.getAttribute('data-level');
+          if (l === 'book') {
+              crumb.classList.add('text-brand-cyan');
+              crumb.classList.remove('text-white/40');
+              crumb.disabled = false;
+          }
+          else if (l === 'chapter') {
+              if (currentBook) {
+                  crumb.innerText = `Capítulo ${currentChapter || '-'}`;
+                  crumb.classList.add('text-brand-cyan');
+                  crumb.classList.remove('text-white/40');
+                  crumb.disabled = false;
+              } else {
+                  crumb.innerText = `Capítulo -`;
+                  crumb.classList.add('text-white/40');
+                  crumb.classList.remove('text-brand-cyan');
+                  crumb.disabled = true;
+              }
+          }
+          else if (l === 'verse') {
+              if (currentChapter) {
+                  crumb.innerText = `Versículo ${currentVerse || '-'}`;
+                  crumb.classList.add('text-brand-cyan');
+                  crumb.classList.remove('text-white/40');
+                  crumb.disabled = false;
+              } else {
+                  crumb.innerText = `Versículo -`;
+                  crumb.classList.add('text-white/40');
+                  crumb.classList.remove('text-brand-cyan');
+                  crumb.disabled = true;
+              }
+          }
+      });
+  }
+  
+  breadcrumbs.forEach((crumb: any) => {
+      crumb.addEventListener('click', () => {
+          const l = crumb.getAttribute('data-level');
+          if (l === 'book') showLevel('book');
+          else if (l === 'chapter' && currentBook) showLevel('chapter');
+          else if (l === 'verse' && currentChapter) showLevel('verse');
+      });
+  });
+  
+  // Event Handlers for Open/Close
+  window.addEventListener('takiy_open_bible', () => {
+      modal?.classList.remove('hidden');
+      initBooksGrid();
+      showLevel('book');
+  });
+  
+  closeBtn?.addEventListener('click', () => {
+      modal?.classList.add('hidden');
+  });
+  
+  // Handle Esc to close
+  window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal?.classList.contains('hidden')) {
+          modal?.classList.add('hidden');
+      }
+  });
+
+  // Init early to render books grid initially
+  initBooksGrid();
+
+  // Project button logic
+  const projectBtn = document.getElementById('btn-project-bible');
+  projectBtn?.addEventListener('click', () => {
+      if (!currentBook || !currentChapter || !currentVerse) {
+          alert("Selecciona un versículo primero.");
+          return;
+      }
+      
+      const activeRow = document.querySelector('[id^="verse-row-"].bg-brand-cyan\\/20');
+      let verseText = "Verso no encontrado";
+      if (activeRow) {
+          verseText = activeRow.querySelector('p')?.innerText || "";
+      }
+      
+      const bibleVerse = {
+          id: `bible_${Date.now()}`,
+          title: `${currentBook.name} ${currentChapter}:${currentVerse}`,
+          author: (document.getElementById('bible-version-select') as HTMLSelectElement)?.value || "RVR1960",
+          category: "BIBLIA",
+          text: verseText, // text field for editor mapping
+          slides: [{ 
+              text: verseText,
+              type: 'verse',
+              background: "https://images.unsplash.com/photo-1505118380757-91f5f45d8de4" // Default serene background
+          }],
+          background: "https://images.unsplash.com/photo-1505118380757-91f5f45d8de4"
+      };
+      
+      window.dispatchEvent(new CustomEvent('takiy_song_selected', { detail: bibleVerse }));
+      
+      // Close modal
+      modal?.classList.add('hidden');
+      
+      // Auto-project
+      setTimeout(() => {
+          const firstSlide = document.querySelector('#queue-grid > div') as HTMLElement;
+          if(firstSlide) firstSlide.click();
+      }, 150);
+  });
+
+</script>
+
+<style>
+  .animate-slide-up {
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+</style>
