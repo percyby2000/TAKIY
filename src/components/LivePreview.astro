@@ -1,0 +1,131 @@
+---
+---
+
+<aside class="w-full h-full flex flex-col bg-black/20 backdrop-blur-md">
+    <!-- Live Screen Header -->
+    <div class="p-4 flex items-center justify-between border-b border-white/5">
+        <div class="flex items-center gap-2">
+            <span id="live-indicator-dot" class="w-2 h-2 rounded-full bg-brand-cyan shadow-[0_0_8px_rgba(0,242,255,0.8)]"></span>
+            <span class="text-[10px] font-black uppercase tracking-widest text-white/90">Preview En Vivo</span>
+        </div>
+        <div id="live-status-tag" class="px-2 py-0.5 rounded-full bg-brand-cyan/10 border border-brand-cyan/30 text-[8px] font-bold text-brand-cyan tracking-widest uppercase">Listo</div>
+    </div>
+
+    <!-- The Monitor Screen -->
+    <div class="p-4">
+        <div class="aspect-video w-full rounded-lg relative overflow-hidden ring-1 ring-white/10 shadow-2xl bg-black group">
+             <!-- Blackout over monitor -->
+             <div id="monitor-blackout" class="absolute inset-0 z-40 bg-black opacity-0 transition-opacity pointer-events-none"></div>
+             
+             <!-- Content Rendering -->
+             <div id="monitor-content" class="absolute inset-0 flex items-center justify-center text-center p-4 transition-all duration-300">
+                <div id="monitor-bg" class="absolute inset-0 opacity-40 bg-cover bg-center transition-all duration-500"></div>
+                <div id="monitor-text" class="relative z-10 text-[10px] font-bold leading-relaxed line-clamp-4 transition-all duration-300">
+                    -- EN ESPERA --
+                </div>
+             </div>
+             
+             <!-- Overlay Status -->
+             <div class="absolute top-2 right-2 flex gap-1 z-50">
+                <div class="px-1.5 py-0.5 rounded bg-black/60 backdrop-blur-md text-[8px] font-bold text-white/60">LIVE</div>
+             </div>
+        </div>
+    </div>
+
+    <!-- Quick Controls -->
+    <div class="px-4 py-2 grid grid-cols-2 gap-2">
+        <button id="ctrl-blackout" class="py-3 bg-red-600/20 border border-red-600/40 rounded-lg text-[10px] font-bold text-red-500 hover:bg-red-600 hover:text-white transition-all-300 uppercase tracking-widest">Negro</button>
+        <button id="ctrl-clear" class="py-3 bg-white/5 border border-white/10 rounded-lg text-[10px] font-bold text-white/40 hover:bg-white/10 hover:text-white transition-all-300 uppercase tracking-widest">Limpiar</button>
+    </div>
+
+    <!-- Progression -->
+    <div class="px-4 py-4 flex-1 flex flex-col gap-4">
+        <div class="flex items-center justify-between">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-white/40">Controles</span>
+            <div class="flex gap-1">
+                <button id="ctrl-prev" class="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-brand-cyan hover:text-black transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+                <button id="ctrl-next" class="w-10 h-10 flex items-center justify-center rounded-lg bg-white/5 border border-white/10 hover:bg-brand-cyan hover:text-black transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Transitions -->
+        <div class="flex flex-col gap-2">
+            <span class="text-[8px] font-bold uppercase tracking-widest text-white/30">Transición</span>
+            <select class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-wide focus:outline-none focus:border-brand-cyan/50 transition-all appearance-none text-white/60">
+                <option>Funda (0.4s)</option>
+                <option>Corte Directo</option>
+                <option>Deslizar</option>
+            </select>
+        </div>
+
+        <!-- Timer -->
+        <div class="mt-auto pb-4 pt-10 flex flex-col items-center">
+            <div id="live-timer" class="text-3xl font-mono font-bold text-white/20 tracking-tighter">00:00:00</div>
+            <span class="text-[8px] font-bold uppercase tracking-widest text-white/20">Cronómetro en vivo</span>
+        </div>
+    </div>
+</aside>
+
+<script>
+    import { projectionManager } from '../utils/projectionManager';
+
+    const monitorText = document.getElementById('monitor-text');
+    const monitorBg = document.getElementById('monitor-bg') as HTMLElement;
+    const monitorBlackout = document.getElementById('monitor-blackout');
+    const liveStatus = document.getElementById('live-status-tag');
+    const liveIndicator = document.getElementById('live-indicator-dot');
+    const timerDisplay = document.getElementById('live-timer');
+
+    const btnBlackout = document.getElementById('ctrl-blackout');
+    const btnClear = document.getElementById('ctrl-clear');
+    const btnPrev = document.getElementById('ctrl-prev');
+    const btnNext = document.getElementById('ctrl-next');
+
+    // Update Monitor UI when slide changes
+    window.addEventListener('takiy_slide_changed', (e: any) => {
+        const { slide } = e.detail;
+        if (monitorText) monitorText.innerHTML = slide.text;
+        if (monitorBg) monitorBg.style.backgroundImage = `url(${slide.background})`;
+        if (liveStatus) liveStatus.innerText = 'LIVE';
+    });
+
+    // Handle button clicks
+    btnBlackout?.addEventListener('click', () => {
+        const active = projectionManager.toggleBlackout();
+        if (monitorBlackout) monitorBlackout.style.opacity = active ? '1' : '0';
+        btnBlackout.classList.toggle('bg-red-600', active);
+        btnBlackout.classList.toggle('text-white', active);
+        
+        if (active) {
+            if (liveStatus) liveStatus.innerText = 'OFF';
+            if (liveIndicator) liveIndicator.classList.replace('bg-brand-cyan', 'bg-red-600');
+        } else {
+            if (liveStatus) liveStatus.innerText = 'LIVE';
+            if (liveIndicator) liveIndicator.classList.replace('bg-red-600', 'bg-brand-cyan');
+        }
+    });
+
+    btnClear?.addEventListener('click', () => {
+        const active = projectionManager.toggleClear();
+        if (monitorText) monitorText.style.opacity = active ? '0' : '1';
+        btnClear.classList.toggle('bg-white/20', active);
+        btnClear.classList.toggle('text-white', active);
+    });
+
+    btnPrev?.addEventListener('click', () => projectionManager.prevSlide());
+    btnNext?.addEventListener('click', () => projectionManager.nextSlide());
+
+    // Simple Timer
+    let seconds = 0;
+    setInterval(() => {
+        seconds++;
+        const h = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const m = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        if (timerDisplay) timerDisplay.innerText = `${h}:${m}:${s}`;
+    }, 1000);
+</script>

@@ -1,0 +1,77 @@
+---
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<title>TAKIY | Proyector</title>
+		<meta name="viewport" content="width=device-width" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+	</head>
+	<body class="bg-black h-screen overflow-hidden flex items-center justify-center p-0 m-0">
+		<!-- Background Layer -->
+    <div id="bg-layer" class="absolute inset-0 z-0 bg-cover bg-center transition-all duration-700 ease-in-out"></div>
+    <div class="absolute inset-0 z-10 bg-black/40"></div>
+
+    <!-- Text Layer -->
+    <div 
+      id="text-layer" 
+      class="relative z-20 w-full max-w-6xl px-8 flex items-center justify-center text-center text-white font-black drop-shadow-[0_10px_10px_rgba(0,0,0,0.8)] transition-all duration-500"
+      style="font-size: clamp(2rem, 8vw, 6rem); line-height: 1.1;"
+    >
+      <!-- Content injected by projectorManager -->
+    </div>
+
+    <!-- Blackout Layer -->
+    <div id="blackout" class="absolute inset-0 z-50 bg-black opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+
+    <script>
+      // Projector Side Listener
+      window.addEventListener('message', (event) => {
+        const { type, payload } = event.data;
+        
+        switch (type) {
+          case 'UPDATE_SLIDE':
+            const textLayer = document.getElementById('text-layer');
+            const bgLayer = document.getElementById('bg-layer');
+            
+            if (textLayer) {
+              textLayer.style.opacity = '0';
+              setTimeout(() => {
+                textLayer.innerHTML = payload.text || '';
+                textLayer.style.opacity = '1';
+              }, 300);
+            }
+            
+            if (bgLayer && payload.background) {
+              bgLayer.style.backgroundImage = `url(${payload.background})`;
+            }
+            break;
+            
+          case 'BLACKOUT':
+            const blackout = document.getElementById('blackout');
+            if (blackout) {
+              blackout.style.opacity = payload ? '1' : '0';
+            }
+            break;
+            
+          case 'CLEAR':
+            const layer = document.getElementById('text-layer');
+            if (layer) {
+              layer.style.opacity = payload ? '0' : '1';
+            }
+            break;
+        }
+      });
+
+      // Notify parent that we are ready
+      if (window.opener) {
+        window.opener.postMessage({ type: 'PROJECTOR_READY' }, '*');
+      }
+    </script>
+	</body>
+</html>

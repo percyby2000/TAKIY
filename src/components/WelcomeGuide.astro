@@ -1,0 +1,66 @@
+---
+---
+
+<div id="welcome-guide" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/90 backdrop-blur-md" id="guide-overlay"></div>
+    <div class="relative w-full max-w-xl bg-gradient-to-br from-[#0a0a0a] to-[#050505] border border-white/10 rounded-3xl p-8 shadow-[0_0_100px_rgba(0,242,255,0.1)] animate-fade-in group">
+        
+        <div class="flex flex-col items-center text-center gap-6">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-cyan to-brand-magenta flex items-center justify-center animate-bounce">
+                <span class="font-black text-black text-xl">TK</span>
+            </div>
+            
+            <div class="space-y-2">
+                <h2 class="text-2xl font-black tracking-tighter uppercase italic bg-gradient-to-r from-brand-cyan to-white bg-clip-text text-transparent">Bienvenido a TAKIY</h2>
+                <p class="text-white/40 text-sm font-medium">El software de proyección profesional definitivo.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 w-full text-left mt-4">
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <span class="text-brand-cyan text-[10px] font-bold uppercase tracking-widest block mb-2">1. Preparar</span>
+                    <p class="text-[11px] text-white/60 leading-relaxed">Selecciona una canción de la biblioteca o crea una nueva con el botón "+".</p>
+                </div>
+                <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
+                    <span class="text-brand-magenta text-[10px] font-bold uppercase tracking-widest block mb-2">2. Proyectar</span>
+                    <p class="text-[11px] text-white/60 leading-relaxed">Abre el proyector y haz clic en cualquier diapositiva de la cola inferior.</p>
+                </div>
+            </div>
+
+            <div class="w-full space-y-3 mt-4">
+                <h3 class="text-[9px] font-bold text-white/20 uppercase tracking-[0.2em] text-center">Atajos Rápidos</h3>
+                <div class="flex justify-center gap-3">
+                    <kbd class="px-2 py-1 rounded bg-white/10 text-[10px] font-bold text-brand-cyan border border-white/10">ESC</kbd>
+                    <span class="text-white/20"> Cerrar </span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 text-[10px] font-bold text-brand-cyan border border-white/10">B</kbd>
+                    <span class="text-white/20"> Negro </span>
+                    <kbd class="px-2 py-1 rounded bg-white/10 text-[10px] font-bold text-brand-cyan border border-white/10">C</kbd>
+                    <span class="text-white/20"> Limpiar </span>
+                </div>
+            </div>
+
+            <button id="close-guide" class="mt-6 w-full py-4 bg-white text-black text-xs font-black rounded-2xl hover:bg-brand-cyan transition-all hover:scale-105 active:scale-95 uppercase tracking-widest shadow-2xl">
+                ¡Empezar ahora!
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const guide = document.getElementById('welcome-guide');
+    const closeBtn = document.getElementById('close-guide');
+    const overlay = document.getElementById('guide-overlay');
+
+    const dismiss = () => {
+        guide?.classList.add('opacity-0', 'pointer-events-none', 'scale-110');
+        setTimeout(() => guide?.remove(), 500);
+        localStorage.setItem('takiy_guide_dismissed', 'true');
+    };
+
+    closeBtn?.addEventListener('click', dismiss);
+    overlay?.addEventListener('click', dismiss);
+    
+    // Auto-hide if already dismissed
+    if (localStorage.getItem('takiy_guide_dismissed') === 'true') {
+        guide?.remove();
+    }
+</script>

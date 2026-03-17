@@ -1,0 +1,109 @@
+---
+---
+
+<div class="h-64 border-t border-white/5 bg-[#030303] flex flex-col">
+  <div class="h-10 px-4 flex items-center justify-between border-b border-white/5">
+    <div class="flex items-center gap-2">
+        <span class="text-[10px] font-bold uppercase tracking-widest text-white/40">COLA DE PRESENTACIÓN</span>
+        <span id="queue-count" class="text-[9px] bg-brand-cyan/20 text-brand-cyan px-1.5 py-0.5 rounded-full font-bold">0</span>
+    </div>
+    <div class="flex gap-2">
+      <button id="clear-queue" class="text-[10px] font-bold text-white/40 hover:text-red-500 transition-colors uppercase tracking-widest">Limpiar Todo</button>
+    </div>
+  </div>
+
+  <div class="flex-1 p-4 flex gap-4 overflow-x-auto overflow-y-hidden scroll-smooth" id="presentation-queue">
+    <div class="h-full flex items-center justify-center w-full text-white/10 text-xs italic">
+        Selecciona una canción para comenzar la presentación
+    </div>
+  </div>
+</div>
+
+<script>
+    import { projectionManager } from '../utils/projectionManager';
+    import { songManager } from '../utils/songManager';
+
+    const queueContainer = document.getElementById('presentation-queue');
+    const queueCount = document.getElementById('queue-count');
+    const clearBtn = document.getElementById('clear-queue');
+
+    let currentQueueData: any[] = [];
+
+    function renderQueue() {
+        if (!queueContainer) return;
+        queueContainer.innerHTML = '';
+        
+        if (currentQueueData.length === 0) {
+            queueContainer.innerHTML = '<div class="h-full flex items-center justify-center w-full text-white/10 text-xs italic">La cola está vacía</div>';
+            if (queueCount) queueCount.innerText = '0';
+            return;
+        }
+
+        if (queueCount) queueCount.innerText = currentQueueData.length.toString();
+
+        currentQueueData.forEach((slide: any, index: number) => {
+            const card = document.createElement('div');
+            const isActive = projectionManager.getCurrentIndex() === index;
+            
+            card.className = `flex-none w-48 h-full rounded-lg relative overflow-hidden group cursor-pointer transition-all duration-300 border ${
+                isActive 
+                ? 'border-brand-cyan glow-cyan ring-4 ring-brand-cyan/10 scale-[1.02]' 
+                : 'border-white/10 hover:border-brand-cyan/50'
+            }`;
+            
+            card.innerHTML = `
+                <div class="absolute inset-0 bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity" style="background-image: url(${slide.background})"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                <div class="absolute inset-0 flex items-center justify-center p-4 text-center">
+                    <span class="text-[10px] font-bold leading-tight line-clamp-3">${slide.text}</span>
+                </div>
+                <div class="absolute bottom-2 left-2 flex items-baseline gap-1">
+                    <span class="text-[10px] font-bold ${isActive ? 'text-brand-cyan' : 'text-white/40'}">${(index + 1).toString().padStart(2, '0')}</span>
+                    <span class="text-[8px] font-medium text-white/40 uppercase">Slide</span>
+                </div>
+                ${isActive ? '<div class="absolute top-2 right-2"><div class="w-1.5 h-1.5 rounded-full bg-brand-cyan animate-pulse"></div></div>' : ''}
+            `;
+
+            card.addEventListener('click', () => {
+                projectionManager.updateSlide(index);
+                renderQueue(); // Re-render to show active state
+            });
+
+            queueContainer.appendChild(card);
+        });
+    }
+
+    // Listen for song selection
+    window.addEventListener('takiy_song_selected', (e: any) => {
+        const song = e.detail;
+        currentQueueData = song.slides.map((s: any) => ({ 
+            ...s, 
+            background: song.background 
+        }));
+        projectionManager.setQueue(currentQueueData);
+        
+        // Auto-project first slide when selecting from library
+        if (currentQueueData.length > 0) {
+            projectionManager.updateSlide(0);
+        }
+        
+        renderQueue();
+    });
+
+    // Listen for slide changes (from keyboard or prev/next)
+    window.addEventListener('takiy_slide_changed', () => {
+        renderQueue();
+        
+        // Auto-scroll active slide into view
+        const activeCard = queueContainer?.querySelector('.border-brand-cyan');
+        if (activeCard) {
+            activeCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    });
+
+    clearBtn?.addEventListener('click', () => {
+        currentQueueData = [];
+        projectionManager.setQueue([]);
+        renderQueue();
+    });
+</script>

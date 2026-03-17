@@ -1,0 +1,228 @@
+---
+---
+
+<div id="song-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-0 md:p-4">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" id="modal-overlay"></div>
+    <div class="relative w-full max-w-4xl bg-[#0a0a0a] border border-white/10 rounded-none md:rounded-3xl shadow-2xl overflow-hidden glass animate-fade-in flex flex-col md:flex-row h-full md:h-[80vh]">
+        
+        <!-- Left Panel: Search & Themes -->
+        <div class="w-full md:w-1/3 border-r border-white/5 bg-black/40 flex flex-col h-1/2 md:h-full">
+            <div class="p-4 md:p-6 border-b border-white/5">
+                <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-cyan mb-3">Buscador Global</h3>
+                <div class="relative">
+                    <input type="text" id="lyrics-search-input" placeholder="Artista o Canción..." class="w-full bg-white/5 border border-white/10 rounded-xl py-2 px-4 text-xs focus:border-brand-cyan outline-none transition-all" />
+                    <button id="btn-search-lyrics" class="absolute right-1.5 top-1 p-1.5 bg-brand-cyan/20 text-brand-cyan rounded-lg hover:bg-brand-cyan hover:text-black transition-all">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-width="3" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col gap-2" id="search-results">
+                <div class="text-center py-6 text-[10px] text-white/20 uppercase font-black tracking-widest">Busca en la nube...</div>
+            </div>
+
+            <div class="p-4 md:p-6 border-t border-white/5 bg-black/20">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-brand-magenta">Tema Visual</h3>
+                    <span id="theme-name" class="text-[8px] text-white/30 font-bold uppercase tracking-widest italic">Aurora</span>
+                </div>
+                <div class="grid grid-cols-4 md:grid-cols-4 gap-2 px-1" id="theme-picker">
+                    <button data-name="Espacio" data-url="https://images.unsplash.com/photo-1534796636912-3b95b3ab5986" class="aspect-square rounded-xl border border-white/10 opacity-60 hover:opacity-100 bg-cover bg-center transition-all hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=100')"></button>
+                    <button data-name="Aurora" data-url="https://images.unsplash.com/photo-1531315630201-bb152f598884" class="aspect-square rounded-xl border-2 border-brand-magenta bg-cover bg-center transition-all hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1531315630201-bb152f598884?w=100')"></button>
+                    <button data-name="Bosque" data-url="https://images.unsplash.com/photo-1441974231531-c6227db76b6e" class="aspect-square rounded-xl border border-white/10 opacity-60 hover:opacity-100 bg-cover bg-center transition-all hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=100')"></button>
+                    <button data-name="Océano" data-url="https://images.unsplash.com/photo-1505118380757-91f5f45d8de4" class="aspect-square rounded-xl border border-white/10 opacity-60 hover:opacity-100 bg-cover bg-center transition-all hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1505118380757-91f5f45d8de4?w=100')"></button>
+                    <button data-name="Abstract" data-url="https://images.unsplash.com/photo-1550684848-fac1c5b4e853" class="aspect-square rounded-xl border border-white/10 opacity-60 hover:opacity-100 bg-cover bg-center transition-all hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=100')"></button>
+                    <button data-name="Noche" data-url="https://images.unsplash.com/photo-1472566311191-49673643960c" class="aspect-square rounded-xl border border-white/10 opacity-60 hover:opacity-100 bg-cover bg-center transition-all hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1472566311191-49673643960c?w=100')"></button>
+                    <button data-name="Montañas" data-url="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b" class="aspect-square rounded-xl border border-white/10 opacity-60 hover:opacity-100 bg-cover bg-center transition-all hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=100')"></button>
+                    <button data-name="Cielo" data-url="https://images.unsplash.com/photo-1438232992991-995b7058bbb3" class="aspect-square rounded-xl border border-white/10 opacity-60 hover:opacity-100 bg-cover bg-center transition-all hover:scale-105" style="background-image: url('https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=100')"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Editor -->
+        <div class="flex-1 flex flex-col h-1/2 md:h-full">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between bg-black/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-width="2" stroke-linecap="round"/></svg>
+                    </div>
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-white/90">Nueva Canción</h2>
+                </div>
+                <button id="close-modal" class="p-2 text-white/40 hover:text-white transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-4 md:p-8 flex-1 flex flex-col gap-4 md:gap-6 overflow-y-auto">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[9px] font-black uppercase tracking-widest text-white/30 ml-1">Título</label>
+                        <input type="text" id="song-title" placeholder="Ej: Sublime Gracia" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs md:text-sm focus:border-brand-cyan outline-none transition-all shadow-inner" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[9px] font-black uppercase tracking-widest text-white/30 ml-1">Autor</label>
+                        <input type="text" id="song-author" placeholder="Ej: John Newton" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-xs md:text-sm focus:border-brand-cyan outline-none transition-all shadow-inner" />
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2 flex-1">
+                    <label class="text-[9px] font-black uppercase tracking-widest text-white/30 ml-1">Contenido / Diapositivas</label>
+                    <textarea id="song-content" class="flex-1 min-h-[150px] md:min-h-[300px] w-full bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 text-xs md:text-sm focus:border-brand-cyan outline-none resize-none font-mono leading-relaxed" placeholder="Pega la letra aquí...&#10;&#10;Separa con '---'."></textarea>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-brand-cyan"></span>
+                        <p class="text-[8px] md:text-[9px] text-white/40 font-bold uppercase tracking-wider">Tip: Usa '---' para nuevas diapositivas.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="px-6 py-4 md:px-8 md:py-6 border-t border-white/5 bg-black/40 flex justify-between md:justify-end gap-3 items-center">
+                <div id="status-indicator" class="text-[8px] md:text-[9px] font-bold text-white/20 uppercase tracking-widest truncate">Listo</div>
+                <div class="flex gap-2">
+                    <button id="cancel-modal" class="px-3 py-2 text-[8px] md:text-[10px] font-bold text-white/40 hover:text-white transition-colors uppercase tracking-widest">Descartar</button>
+                    <button id="save-song-btn" class="px-6 md:px-10 py-2.5 md:py-3 bg-brand-cyan text-black text-[8px] md:text-[10px] font-black rounded-xl md:rounded-2xl hover:scale-105 transition-all glow-cyan uppercase tracking-widest">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { songManager } from '../utils/songManager';
+
+    const modal = document.getElementById('song-modal');
+    const overlay = document.getElementById('modal-overlay');
+    const closeBtn = document.getElementById('close-modal');
+    const cancelBtn = document.getElementById('cancel-modal');
+    const saveBtn = document.getElementById('save-song-btn');
+    const statusIn = document.getElementById('status-indicator');
+
+    // Search
+    const searchIn = document.getElementById('lyrics-search-input') as HTMLInputElement;
+    const searchBtn = document.getElementById('btn-search-lyrics');
+    const searchResults = document.getElementById('search-results');
+
+    // Inputs
+    const titleIn = document.getElementById('song-title') as HTMLInputElement;
+    const authorIn = document.getElementById('song-author') as HTMLInputElement;
+    const contentIn = document.getElementById('song-content') as HTMLTextAreaElement;
+    
+    const themeNameLabel = document.getElementById('theme-name');
+    
+    let selectedBackground = 'https://images.unsplash.com/photo-1531315630201-bb152f598884?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80';
+
+    const toggleModal = () => {
+        modal?.classList.toggle('hidden');
+        modal?.classList.toggle('flex');
+    };
+
+    [overlay, closeBtn, cancelBtn].forEach(el => el?.addEventListener('click', toggleModal));
+    
+    document.addEventListener('click', (e) => {
+        const target = e.target as HTMLElement;
+        if (target.id === 'btn-new-song' || target.closest('#btn-new-song')) {
+            toggleModal();
+        }
+    });
+
+    // Theme Picker Logic
+    const themeBtns = document.querySelectorAll('#theme-picker button');
+    themeBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            themeBtns.forEach(b => {
+                b.classList.remove('border-2', 'border-brand-magenta');
+                b.classList.add('border', 'border-white/10', 'opacity-60');
+            });
+            btn.classList.add('border-2', 'border-brand-magenta');
+            btn.classList.remove('border', 'border-white/10', 'opacity-60');
+            
+            const name = (btn as HTMLElement).dataset.name;
+            const url = (btn as HTMLElement).dataset.url;
+            
+            if (themeNameLabel && name) themeNameLabel.innerText = name;
+            selectedBackground = url + '?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80';
+        });
+    });
+
+    // Lyrics Search Logic
+    searchBtn?.addEventListener('click', async () => {
+        const query = searchIn.value;
+        if (!query) return;
+
+        if (searchResults) searchResults.innerHTML = '<div class="text-center py-10 animate-pulse text-[10px] text-brand-cyan uppercase font-black tracking-widest">Buscando...</div>';
+        if (statusIn) statusIn.innerText = 'Buscando en red...';
+
+        try {
+            const res = await fetch(`https://api.lyrics.ovh/suggest/${query}`);
+            const data = await res.json();
+            
+            if (searchResults) {
+                searchResults.innerHTML = '';
+                data.data.slice(0, 6).forEach((item: any) => {
+                    const div = document.createElement('div');
+                    div.className = 'p-3 rounded-xl bg-white/5 border border-white/5 hover:border-brand-cyan hover:bg-brand-cyan/5 cursor-pointer transition-all group';
+                    div.innerHTML = `
+                        <div class="text-[11px] font-bold text-white/80 group-hover:text-brand-cyan truncate">${item.title}</div>
+                        <div class="text-[9px] text-white/30 truncate">${item.artist.name}</div>
+                    `;
+                    div.addEventListener('click', async () => {
+                        titleIn.value = item.title;
+                        authorIn.value = item.artist.name;
+                        
+                        if (statusIn) statusIn.innerText = 'Importando letra...';
+                        
+                        // Try to get lyrics
+                        try {
+                            const lRes = await fetch(`https://api.lyrics.ovh/v1/${item.artist.name}/${item.title}`);
+                            const lData = await lRes.json();
+                            if (lData.lyrics) {
+                                // Simple auto-formatting: replace double newlines with slide break
+                                contentIn.value = lData.lyrics.replace(/\n\n/g, '\n---\n');
+                                if (statusIn) statusIn.innerText = 'Importado con éxito';
+                            } else {
+                                alert('No se encontraron letras detalladas, pero se importó la info.');
+                                if (statusIn) statusIn.innerText = 'Solo metadatos';
+                            }
+                        } catch (e) {
+                            if (statusIn) statusIn.innerText = 'Error en letra';
+                        }
+                    });
+                    searchResults.appendChild(div);
+                });
+            }
+        } catch (e) {
+            if (searchResults) searchResults.innerHTML = '<div class="text-center py-10 text-red-500 text-[9px] uppercase font-black">Error de conexión</div>';
+        }
+    });
+
+    saveBtn?.addEventListener('click', () => {
+        const title = titleIn?.value;
+        const author = authorIn?.value;
+        const rawContent = contentIn?.value;
+
+        if (!title || !rawContent) return;
+
+        const slides = rawContent.split('---').map(text => ({
+            text: text.trim().replace(/\n/g, '<br/>')
+        })).filter(s => s.text.length > 0);
+
+        const newSong = {
+            title,
+            author: author || 'Desconocido',
+            category: 'Canción',
+            slides,
+            background: selectedBackground
+        };
+
+        songManager.saveSong(newSong);
+        
+        if (titleIn) titleIn.value = '';
+        if (authorIn) authorIn.value = '';
+        if (contentIn) contentIn.value = '';
+        toggleModal();
+    });
+</script>

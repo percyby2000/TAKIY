@@ -1,0 +1,303 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Sidebar from "../components/Sidebar.astro";
+import Editor from "../components/Editor.astro";
+import LivePreview from "../components/LivePreview.astro";
+import Queue from "../components/Queue.astro";
+import SongModal from "../components/SongModal.astro";
+import WelcomeGuide from "../components/WelcomeGuide.astro";
+---
+
+<MainLayout title="TAKIY | Panel de Control">
+  <WelcomeGuide />
+  <SongModal />
+  <main
+    class="h-screen w-full flex flex-col overflow-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#050505] to-black"
+  >
+    <!-- Header / Nav (Optional but adds to the 'software' feel) -->
+    <header
+      class="h-14 border-b border-white/5 flex items-center px-6 glass justify-between z-50"
+    >
+      <div class="flex items-center gap-3">
+        <img
+          src="/logo.svg"
+          alt="TAKIY Logo"
+          class="w-8 h-8 rounded-lg glow-cyan"
+        />
+        <h1
+          class="text-lg font-bold tracking-tight bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent"
+        >
+          TAKIY <span
+            class="text-[10px] font-medium text-brand-cyan uppercase ml-2 tracking-widest px-1.5 py-0.5 rounded border border-brand-cyan/20"
+            >Pro v1.0</span
+          >
+        </h1>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <div class="flex items-center gap-2">
+          <div
+            class="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.6)]"
+          >
+          </div>
+          <span
+            class="text-xs font-medium text-white/60 uppercase tracking-wider"
+            >Servicio en vivo</span
+          >
+        </div>
+        <button
+          id="projector-launch"
+          class="px-4 py-1.5 text-xs font-bold rounded-full bg-white/5 border border-white/10 hover:bg-brand-cyan hover:text-black transition-all-300"
+        >
+          PROYECTOR
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="flex flex-1 overflow-hidden relative">
+      <!-- 1️⃣ PANEL IZQUIERDO: Biblioteca -->
+      <div
+        id="panel-library"
+        class="panel-transition w-[85vw] max-w-sm h-full fixed inset-y-0 left-0 z-40 lg:relative lg:w-80 lg:translate-x-0 lg:z-auto bg-[#0a0a0a] border-r border-white/5 lg:bg-transparent -translate-x-full"
+      >
+        <Sidebar />
+      </div>
+
+      <!-- 2️⃣ PANEL CENTRAL: Editor & Queue -->
+      <div
+        id="panel-control"
+        class="panel-transition flex-1 flex flex-col border-x border-white/5 bg-black lg:bg-transparent z-30"
+      >
+        <Editor />
+        <Queue />
+      </div>
+
+      <!-- 3️⃣ PANEL DERECHO: Live Preview -->
+      <div
+        id="panel-preview"
+        class="panel-transition w-[85vw] max-w-sm h-full fixed inset-y-0 right-0 z-40 lg:relative lg:w-80 lg:translate-x-0 lg:z-auto bg-[#0a0a0a] border-l border-white/5 lg:bg-transparent translate-x-full"
+      >
+        <LivePreview />
+      </div>
+
+      <!-- Mobile Overlay -->
+      <div
+        id="mobile-overlay"
+        class="fixed inset-0 bg-black/80 backdrop-blur-md z-35 hidden lg:hidden opacity-0 transition-opacity duration-300"
+      >
+      </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <nav
+      class="lg:hidden h-16 border-t border-white/10 bg-black/80 backdrop-blur-xl flex items-center justify-around px-4 pb-safe z-50"
+    >
+      <button
+        data-target="panel-library"
+        class="mobile-tab-btn flex flex-col items-center gap-1 text-white/40"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          ><path
+            d="M4 6h16M4 12h16M4 18h7"
+            stroke-width="2"
+            stroke-linecap="round"></path></svg
+        >
+        <span class="text-[8px] font-black uppercase tracking-widest"
+          >Biblioteca</span
+        >
+      </button>
+      <button
+        data-target="panel-control"
+        class="mobile-tab-btn flex flex-col items-center gap-1 text-brand-cyan"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          ><path
+            d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"
+            stroke-width="2"
+            stroke-linecap="round"></path></svg
+        >
+        <span class="text-[8px] font-black uppercase tracking-widest"
+          >Control</span
+        >
+      </button>
+      <button
+        data-target="panel-preview"
+        class="mobile-tab-btn flex flex-col items-center gap-1 text-white/40"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          ><path
+            d="M15 10l5 5-5 5M4 4v7a4 4 0 004 4h12"
+            stroke-width="2"
+            stroke-linecap="round"></path></svg
+        >
+        <span class="text-[8px] font-black uppercase tracking-widest"
+          >En Vivo</span
+        >
+      </button>
+    </nav>
+  </main>
+</MainLayout>
+
+<style>
+  .panel-transition {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Active states for mobile tabs */
+  .mobile-tab-btn.active {
+    color: var(--brand-cyan);
+  }
+</style>
+
+<script>
+  import { projectionManager } from "../utils/projectionManager";
+  import { setupKeyboardControls } from "../utils/keyboardControls";
+
+  // Preload common backgrounds for speed
+  const preloadImages = [
+    'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986',
+    'https://images.unsplash.com/photo-1531315630201-bb152f598884',
+    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e',
+    'https://images.unsplash.com/photo-1505118380757-91f5f45d8de4'
+  ];
+  
+  preloadImages.forEach(url => {
+    const img = new Image();
+    img.src = url + '?ixlib=rb-1.2.1&auto=format&fit=crop&w=1920&q=80';
+  });
+
+  // Initialize Keyboard Shortcuts
+  setupKeyboardControls();
+
+  // Mobile Navigation Logic
+  const mobileTabs = document.querySelectorAll(".mobile-tab-btn");
+  const panels = {
+    "panel-library": document.getElementById("panel-library"),
+    "panel-control": document.getElementById("panel-control"),
+    "panel-preview": document.getElementById("panel-preview"),
+  };
+  const overlay = document.getElementById("mobile-overlay");
+
+  mobileTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const targetId = tab.getAttribute("data-target");
+
+      // Update UI active state
+      mobileTabs.forEach((t) => {
+        t.classList.remove("text-brand-cyan");
+        t.classList.add("text-white/40");
+      });
+      tab.classList.remove("text-white/40");
+      tab.classList.add("text-brand-cyan");
+
+      // Handle Panels
+      if (window.innerWidth < 1024) {
+        if (targetId === "panel-library") {
+          panels["panel-library"]?.classList.remove("-translate-x-full");
+          overlay?.classList.remove("hidden");
+        } else if (targetId === "panel-preview") {
+          panels["panel-preview"]?.classList.remove("translate-x-full");
+          overlay?.classList.remove("hidden");
+        } else {
+          // Reset side panels
+          panels["panel-library"]?.classList.add("-translate-x-full");
+          panels["panel-preview"]?.classList.add("translate-x-full");
+          overlay?.classList.add("hidden");
+        }
+      }
+    });
+  });
+
+  overlay?.addEventListener("click", () => {
+    panels["panel-library"]?.classList.add("-translate-x-full");
+    panels["panel-preview"]?.classList.add("translate-x-full");
+    overlay?.classList.add("hidden");
+    // Set middle tab as active
+    mobileTabs.forEach((t, i) => {
+      if (i === 1) {
+        t.classList.add("text-brand-cyan");
+        t.classList.remove("text-white/40");
+      } else {
+        t.classList.remove("text-brand-cyan");
+        t.classList.add("text-white/40");
+      }
+    });
+  });
+
+  // Projector Window management
+  let projectorWindow: Window | null = null;
+
+  const launchProjector = () => {
+    // If window exists and isn't closed, just focus it
+    if (projectorWindow && !projectorWindow.closed) {
+      projectorWindow.focus();
+      // Re-sync
+      projectionManager.setProjector(projectorWindow);
+      return;
+    }
+
+    // Try to open new window
+    const win = window.open(
+      "/projector",
+      "TAKIYProjector",
+      "width=1280,height=720,menubar=no,toolbar=no,location=no,status=no",
+    );
+
+    if (win) {
+      projectorWindow = win;
+      projectionManager.setProjector(win);
+
+      const btn = document.getElementById("projector-launch");
+      if (btn) btn.innerText = "CONECTANDO...";
+    } else {
+      alert(
+        "Por favor permite las ventanas emergentes (pop-ups) para abrir el proyector.",
+      );
+    }
+  };
+
+  const projectorBtn = document.getElementById("projector-launch");
+  projectorBtn?.addEventListener("click", launchProjector);
+
+  // Sync UI state when toggled via keyboard (B/C keys)
+  window.addEventListener("takiy_state_toggled", (e: any) => {
+    const { type } = e.detail;
+    if (type === "blackout") {
+      document.getElementById("ctrl-blackout")?.click();
+    } else if (type === "clear") {
+      document.getElementById("ctrl-clear")?.click();
+    }
+  });
+
+  // Handle projector readiness
+  window.addEventListener("message", (event) => {
+    if (event.data.type === "PROJECTOR_READY") {
+      const btn = document.getElementById("projector-launch");
+      if (btn && projectorWindow) {
+        btn.classList.add(
+          "bg-brand-cyan/20",
+          "text-brand-cyan",
+          "border-brand-cyan/50",
+        );
+        btn.innerText = "PROYECTOR ACTIVO";
+
+        // Force set again to ensure reference is active
+        projectionManager.setProjector(projectorWindow);
+      }
+      console.log("Projector is ready and connected!");
+    }
+  });
+</script>
