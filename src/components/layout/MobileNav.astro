@@ -1,0 +1,128 @@
+---
+---
+<nav
+  class="lg:hidden h-16 border-t border-white/10 bg-black/80 backdrop-blur-xl flex items-center justify-around px-4 pb-safe z-50"
+>
+  <button
+    data-target="panel-library"
+    class="mobile-tab-btn flex flex-col items-center gap-1 text-white/40"
+  >
+    <svg
+      class="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      ><path
+        d="M4 6h16M4 12h16M4 18h7"
+        stroke-width="2"
+        stroke-linecap="round"></path></svg
+    >
+    <span class="text-[8px] font-black uppercase tracking-widest"
+      >Biblioteca</span
+    >
+  </button>
+  <button
+    data-target="panel-control"
+    class="mobile-tab-btn flex flex-col items-center gap-1 text-brand-cyan"
+  >
+    <svg
+      class="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      ><path
+        d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 010 7.07M19.07 4.93a10 10 0 010 14.14"
+        stroke-width="2"
+        stroke-linecap="round"></path></svg
+    >
+    <span class="text-[8px] font-black uppercase tracking-widest"
+      >Control</span
+    >
+  </button>
+  <button
+    data-target="panel-preview"
+    class="mobile-tab-btn flex flex-col items-center gap-1 text-white/40"
+  >
+    <svg
+      class="w-5 h-5"
+      fill="none"
+      stroke="currentColor"
+      viewBox="0 0 24 24"
+      ><path
+        d="M15 10l5 5-5 5M4 4v7a4 4 0 004 4h12"
+        stroke-width="2"
+        stroke-linecap="round"></path></svg
+    >
+    <span class="text-[8px] font-black uppercase tracking-widest"
+      >En Vivo</span
+    >
+  </button>
+</nav>
+
+<style>
+  /* Active states for mobile tabs */
+  .mobile-tab-btn.active {
+    color: var(--brand-cyan);
+  }
+</style>
+
+<script>
+  // Mobile Navigation Logic
+  const mobileTabs = document.querySelectorAll(".mobile-tab-btn");
+  const overlay = document.getElementById("mobile-overlay");
+
+  const getPanels = () => ({
+    "panel-library": document.getElementById("panel-library"),
+    "panel-control": document.getElementById("panel-control"),
+    "panel-preview": document.getElementById("panel-preview"),
+  });
+
+  mobileTabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const targetId = tab.getAttribute("data-target");
+      const panels = getPanels();
+
+      // Update UI active state
+      mobileTabs.forEach((t) => {
+        t.classList.remove("text-brand-cyan");
+        t.classList.add("text-white/40");
+      });
+      tab.classList.remove("text-white/40");
+      tab.classList.add("text-brand-cyan");
+
+      // Handle Panels
+      if (window.innerWidth < 1024) {
+        if (targetId === "panel-library") {
+          panels["panel-library"]?.classList.remove("-translate-x-full");
+          overlay?.classList.remove("hidden");
+        } else if (targetId === "panel-preview") {
+          panels["panel-preview"]?.classList.remove("translate-x-full");
+          overlay?.classList.remove("hidden");
+        } else {
+          // Reset side panels
+          panels["panel-library"]?.classList.add("-translate-x-full");
+          panels["panel-preview"]?.classList.add("translate-x-full");
+          overlay?.classList.add("hidden");
+        }
+      }
+    });
+  });
+
+  overlay?.addEventListener("click", () => {
+    const panels = getPanels();
+    panels["panel-library"]?.classList.add("-translate-x-full");
+    panels["panel-preview"]?.classList.add("translate-x-full");
+    overlay?.classList.add("hidden");
+    
+    // Set middle tab as active
+    mobileTabs.forEach((t, i) => {
+      if (i === 1) {
+        t.classList.add("text-brand-cyan");
+        t.classList.remove("text-white/40");
+      } else {
+        t.classList.remove("text-brand-cyan");
+        t.classList.add("text-white/40");
+      }
+    });
+  });
+</script>

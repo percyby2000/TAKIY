@@ -1,0 +1,23 @@
+---
+import PanelLibrary from "./PanelLibrary.astro";
+import PanelControl from "./PanelControl.astro";
+import PanelPreview from "./PanelPreview.astro";
+---
+
+<div class="flex flex-1 overflow-hidden relative">
+  <!-- 1️⃣ PANEL IZQUIERDO: Biblioteca -->
+  <PanelLibrary />
+
+  <!-- 2️⃣ PANEL CENTRAL: Editor & Queue -->
+  <PanelControl />
+
+  <!-- 3️⃣ PANEL DERECHO: Live Preview -->
+  <PanelPreview />
+
+  <!-- Mobile Overlay -->
+  <div
+    id="mobile-overlay"
+    class="fixed inset-0 bg-black/80 backdrop-blur-md z-35 hidden lg:hidden opacity-0 transition-opacity duration-300"
+  >
+  </div>
+</div>
